@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from pprint import pprint as pp
-from .models import Question
+from .models import Question, Choice
+from django.urls import reverse
 
 
 def index(request):
@@ -20,23 +21,51 @@ def detail(request, qu_id):
     pp(request.__dict__)
 
     try:
-        quest = Question.objects.get(pk=qu_id)
+        qu = Question.objects.get(pk=qu_id)
     except Question.DoesNotExist:
         raise Http404('Question does not exist')
 
     # or
-    # quest = get_object_or_404(Question, qu_text='Just added')
+    # qu = get_object_or_404(Question, qu_text='Just added')
 
-    return render(request, 'polls/detail.html', {'quest': quest})
+    return render(request, 'polls/detail.html', {'qu': qu})
 
 
 def results(request, qu_id):
     print(f'{request=}\n{type(request)=}')
     pp(request.__dict__)
-    return HttpResponse(f"You're looking at the results of question {qu_id}")
+
+    try:
+        qu = Question.objects.get(id=qu_id)
+    except Question.DoesNotExist:
+        raise Http404('Question does not exist')
+
+    return render(request, 'polls/results.html', {'qu': qu})
 
 
-def vote(request, qu_id):
+def vote(request, qu_id: int):
     print(f'{request=}\n{type(request)=}')
     pp(request.__dict__)
-    return HttpResponse(f"You're looking on voting on question {qu_id}")
+    
+    try:
+        qu = Question.objects.get(id=qu_id)
+    except Question.DoesNotExist:
+        raise Http404('Question does not exist')
+
+    try:
+        pp(f'{request.POST=}')
+        selected_ch = qu.choice_set.get(id=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        # Redisplay the qu voting form
+        return render(
+            request,
+            'polls/detail.html',
+            {'qu': qu, 'error_message': "You didn't select a choice"}
+        )
+    else:
+        selected_ch.votes += 1
+        selected_ch.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back btn
+        return HttpResponseRedirect(reverse('polls:results', args=(qu.id, )))
