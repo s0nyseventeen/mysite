@@ -11,8 +11,9 @@ class Question(models.Model):
     def __str__(self):
         return self.qu_text
 
-    def was_published_recent(self) -> bool:
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+    def was_published_recently(self) -> bool:
+        now = timezone.now()
+        return now - datetime.timedelta(days=1) <= self.pub_date <= now
 
 
 class Choice(models.Model):
