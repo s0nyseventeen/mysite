@@ -1,0 +1,9 @@
+{% if latest_qu_list %}
+	<ul>
+		{% for qu in latest_qu_list %}
+		<li><a href="{% url 'polls:detail' qu.id %}">{{ qu.qu_text }}</a></li>
+		{% endfor %}
+	</ul>
+{% else %}
+	<p>No polls are available</p>
+{% endif %}
