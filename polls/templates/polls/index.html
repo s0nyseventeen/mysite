@@ -10,3 +10,11 @@
 {% else %}
 	<p>No polls are available</p>
 {% endif %}
+
+<br>
+
+<ul>
+	{% for r in request.headers.items %}
+		<li>{{ r }}</li>
+	{% endfor %}
+</ul>
